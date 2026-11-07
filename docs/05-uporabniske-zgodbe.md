@@ -8,7 +8,7 @@ Kot [uporabniška vloga] želim [dejanje/cilj], da [razlog/vrednost].
 
 # Uporabniške zgodbe
 
-## ## **US-01:** Dinamična spletna stran kot vmesnik (MPV)
+## ## **US-01:** Dinamična spletna stran kot vmesnik (MVP)
 
 User Story:
 - Kot uporabnik portala želim dostopati do vseh ostalih funkcionalnosti portala preko spletnega vmesnika (spletne strani), kjer bodo funkcionalnosti prikazane z gumbi.
@@ -20,7 +20,7 @@ Acceptance criteria:
 
 
 
-## **US-02:** CRUD operacije (MPV)
+## **US-02:** CRUD operacije (MVP)
 
 User Story:
 - Kot uporabnik želim imeti možnost ustvarjanja, branja, posodabljanja in brisanja podatkov, za realen prikaz stanja znotraj baze.
@@ -32,7 +32,7 @@ Acceptance criteria:
 
 
 
-## **US-03:** Avtentikacija - prijava uporabnika (MPV)
+## **US-03:** Avtentikacija - prijava uporabnika (MVP)
 
 User Story:
 - Kot uporabnik želim ob prvem obisku strani vpisati svoje uporabniško ime in geslo za dostop do portala.
@@ -44,7 +44,7 @@ Acceptance criteria:
 
 
 
-## **US-04:** Avtorizacija uporabnikov - prilagojen dostop do podatkov, projektov in ostalih funkcionalnosti (MPV)
+## **US-04:** Avtorizacija uporabnikov - prilagojen dostop do podatkov, projektov in ostalih funkcionalnosti (MVP)
 
 User Story:
 - Kot uporabnik želim dostop le do tistih podatkov do katerih dostop mi dovoljuje moja vloga, za ohranjanje varnosti.
@@ -70,7 +70,7 @@ Acceptance criteria:
  
 
 
-## **US-06:** Pregled nad vsemi knjižnimi projekti (glavni urednik) (MPV)
+## **US-06:** Pregled nad vsemi knjižnimi projekti (glavni urednik) (MVP)
 
 User Story:
 - Kot glavni urednik želim pregled nad vsemi projekti, tekočimi in zaključenimi, za strukturiran dostop in pregled nad delom.
@@ -82,7 +82,7 @@ Acceptance criteria:
 
 
 
-## **US-07:** Dodeljevanje dostopov (glavni urednik) uporabnikom na posameznem projektu (MPV)
+## **US-07:** Dodeljevanje dostopov (glavni urednik) uporabnikom na posameznem projektu (MVP)
 
 User Story:
 - Kot glavni urednik želim dodeliti dostop posameznim urednikom zgolj do določenih projektov za lažjo delitev dela.
@@ -118,7 +118,7 @@ Acceptance criteria:
 
 
 
-## **US-10:** Pregled nad trenutnimi dodeljenimi projekti in izpolnjevanje (urednik) (MPV)
+## **US-10:** Pregled nad trenutnimi dodeljenimi projekti in izpolnjevanje (urednik) (MVP)
 
 User Story:
 - Kot urednik želim pregled nad trenutnimi projekti katerim sem dodeljen in izpolnjevanje podatkov znotraj njih.

@@ -1,15 +1,26 @@
 import styles from './Header.module.css'
+import { NavLink } from 'react-router-dom'
 
-const sections = ['Projekti', 'Uredniki', 'Avtorji']
+const sections = [
+  { label: 'Projekti', to: '/projekti' },
+  { label: 'Uredniki', to: '/uredniki' },
+  { label: 'Avtorji', to: '/avtorji' },
+]
 
 function Header() {
   return (
     <header className={styles.header}>
-      <nav className={styles.navigation} aria-label="Glavna navigacija">
-        {sections.map((section) => (
-          <button className={styles.navButton} key={section} type="button">
-            {section}
-          </button>
+      <nav className={styles.navigation}>
+        {sections.map(({ label, to }) => (
+          <NavLink
+            className={({ isActive }) =>
+              `${styles.navButton}${isActive ? ` ${styles.active}` : ''}`
+            }
+            key={to}
+            to={to}
+          >
+            {label}
+          </NavLink>
         ))}
       </nav>
 

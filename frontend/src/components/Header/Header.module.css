@@ -35,11 +35,18 @@
 }
 
 .navButton {
+  display: inline-block;
   color: #344054;
   background: transparent;
+  text-decoration: none;
 }
 
 .navButton:hover {
+  background: #f2f4f7;
+}
+
+.active {
+  color: #101828;
   background: #f2f4f7;
 }
 

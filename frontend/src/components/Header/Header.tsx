@@ -26,9 +26,9 @@ function Header() {
 
       <h1 className={styles.title}>Uredniški portal</h1>
 
-      <button className={styles.userButton} type="button">
+      <NavLink className={styles.userButton!} to="/prijava">
         Uporabnik
-      </button>
+      </NavLink>
     </header>
   )
 }

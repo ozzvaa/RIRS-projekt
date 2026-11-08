@@ -4,6 +4,7 @@ import 'dotenv/config'
 import authRouter from './routes/auth'
 import userRouter from './routes/user'
 import authorRouter from './routes/author'
+import editorRouter from './routes/editor'
 
 const app = express()
 const port = process.env.PORT || 3000;
@@ -12,6 +13,7 @@ app.use(cookieParser())
 app.use('/api/auth', authRouter)
 app.use('/api/users', userRouter)
 app.use('/api/avtorji', authorRouter)
+app.use('/api/uredniki', editorRouter)
 
 app.get('/', (_req: Request, res: Response) => {
   res.send('Backend deluje!')

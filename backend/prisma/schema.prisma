@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -27,4 +22,255 @@ model Uporabnik {
   priimek   String?
   gesloHash String?
   vloge     Vloga[] @default([UPORABNIK])
+}
+
+
+enum Spol {
+  moski  @map("m")
+  zenska @map("z")
+}
+
+model Avtor {
+  id                      Int               @id @default(autoincrement())
+  priimek                 String?
+  ime                     String?
+  spol                    Spol?             @default(moski)
+  opis                    String?
+
+  avtor_knjig             Knjiga[]          @relation("Avtorji")
+  prevod_knjig            Knjiga[]          @relation("Prevajalci")
+  lektor_knjig            Knjiga[]          @relation("Lektorji")
+  urednik_knjig           Knjiga[]          @relation("Uredniki")
+  korekturno_branje_knjig Knjiga[]          @relation("KorekturnoBranje")
+  prelom_knjig            Knjiga[]          @relation("Prelom")
+  oblikovanje_knjig       Knjiga[]          @relation("Oblikovanje")
+  ilustriranje_knjig      Knjiga[]          @relation("Ilustratorji")
+
+  spremna_besedila        SpremnoBesedilo[]
+}
+
+model Knjiga {
+  id                         Int                    @id @default(autoincrement())
+  naslov                     String?
+  podnaslov                  String?
+  sifra                      Int?                   @unique
+  leto_izdaje                Int?
+
+  prva_izdaja                Boolean?
+  navedba_izdaje             String?
+
+  izvirno                    Boolean?
+  prevod_iz                  String?
+  izvirni_naslov             String?
+
+  avtorji                    Avtor[]                @relation("Avtorji")
+  prevajalci                 Avtor[]                @relation("Prevajalci")
+  lektorji                   Avtor[]                @relation("Lektorji")
+  uredniki                   Avtor[]                @relation("Uredniki")
+  korekturno_branje          Avtor[]                @relation("KorekturnoBranje")
+  prelom                     Avtor[]                @relation("Prelom")
+  oblikovanje                Avtor[]                @relation("Oblikovanje")
+  ilustratorji               Avtor[]                @relation("Ilustratorji")
+
+  spremna_besedila           SpremnoBesedilo[]
+
+  stevilo_znakov_s_presledki Int?
+  avtorske_pole              Decimal? @db.Decimal(10, 2)
+  st_osnovnih_strani         Int?
+  st_dodatnih_strani         Int?
+  st_strani_skupaj           Int?
+  naklada                    Int?
+
+  format_Id                  Int?
+  format                     Format?                @relation(fields: [format_Id], references: [id])
+
+  vezava_Id                  Int?
+  vezava                     Vezava?                @relation(fields: [vezava_Id], references: [id])
+
+  notranji_papir_Id          Int?
+  notranji_papir             Papir?                 @relation("NotranjiPapir", fields: [notranji_papir_Id], references: [id])
+
+  ovitek_papir_Id            Int?
+  ovitek_papir                Papir?                 @relation("OvitekPapir", fields: [ovitek_papir_Id], references: [id])
+
+  vezni_listi_papir_Id       Int?
+  vezni_listi_papir          Papir?                 @relation("VezniListiPapir", fields: [vezni_listi_papir_Id], references: [id])
+
+  tisk_notranje_strani       String?
+  tisk_ovitek                String?
+  tisk_vezani_listi          String?
+
+  povprasevanja              PovprasevanjeNaklada[]
+
+  nadizvod                   Decimal? @db.Decimal(10, 2)
+
+  kapitalni_trak             Boolean?
+  kapitalni_trak_tip         String?
+
+  oznacevalna_vrvica         Boolean?
+  oznacevalna_vrvica_tip     String?
+
+  dodelava                   String?
+
+  isbn                       ISBN[]
+
+  cobiss_Id                  String?
+
+  zaloznik_Id                Int?
+  zaloznik                   Zalozba?               @relation("Zaloznik", fields: [zaloznik_Id], references: [id])
+
+  izvirna_zalozba            Zalozba[]              @relation("IzvirnaZalozba")
+  sozalozniki                Zalozba[]              @relation("Sozalozniki")
+  v_sodelovanju_z            Zalozba[]              @relation("SodelujoceZalozbe")
+
+  opombe_pogodbena_dolocila  String?
+  rok_izdaje_po_pogodbi      DateTime?
+
+  rubrika_katalog_Id         Int?
+  rubrika_katalog            Rubrika?               @relation("RubrikaKatalog", fields: [rubrika_katalog_Id], references: [id])
+
+  rubrike_na_spletu          Rubrika[]              @relation("RubrikeNaSpletu")
+
+  jak                        Boolean?
+  subvencije                 String?
+  znesek_subvencije          Decimal? @db.Decimal(10, 2)
+  datum_izdaje               DateTime?
+  prvi_prodajni_dan          DateTime?
+  cena_mpc                   Decimal? @db.Decimal(10, 2)
+
+  ddv_Id                     Int?
+  ddv                        DDV?                   @relation(fields: [ddv_Id], references: [id])
+
+  vsebina_za_katalog         String?
+  daljsi_sestavek_o_knjigi   String?
+  kratek_citat               String?
+
+  nagrade                    Nagrada[]              @relation("KnjigaNagrada")
+
+  zbirke                     Zbirka[]               @relation("KnjigeVZbirki")
+
+  @@map("knjiga")
+}
+
+model SpremnoBesedilo {
+  id        Int    @id @default(autoincrement())
+  vloga     String
+  avtor_Id   Int
+  avtor     Avtor  @relation(fields: [avtor_Id], references: [id])
+  knjiga_Id Int
+  knjiga    Knjiga @relation(fields: [knjiga_Id], references: [id])
+
+  @@map("spremno_besedilo")
+}
+
+model Papir {
+  id               Int      @id @default(autoincrement())
+  ime              String?
+  volumen          String?
+  gramatura        String?
+
+  knjigeNotranji   Knjiga[] @relation("NotranjiPapir")
+  knjigeOvitek     Knjiga[] @relation("OvitekPapir")
+  knjigeVezniListi Knjiga[] @relation("VezniListiPapir")
+
+  @@map("papir")
+}
+
+model PovprasevanjeNaklada {
+  id        Int            @id @default(autoincrement())
+  naklada   Int
+  cena      Decimal @db.Decimal(10, 2)
+  knjiga_Id Int
+  knjiga    Knjiga         @relation(fields: [knjiga_Id], references: [id], onDelete: Cascade)
+
+  @@map("povprasevanje_naklada")
+}
+
+model ISBN {
+  id          Int     @id @default(autoincrement())
+  isbn        String
+
+  zaloznik_Id Int
+  zaloznik    Zalozba @relation(fields: [zaloznik_Id], references: [id])
+
+  knjiga_Id   Int
+  knjiga      Knjiga  @relation(fields: [knjiga_Id], references: [id], onDelete: Cascade)
+
+  @@map("isbn")
+}
+
+model Zalozba {
+  id                Int      @id @default(autoincrement())
+  naziv             String
+
+  izdani_isbn       ISBN[]
+
+  zaloznik_knjig    Knjiga[] @relation("Zaloznik")
+
+  izvirnik_knjig    Knjiga[] @relation("IzvirnaZalozba")
+  sozalozniki_knjig Knjiga[] @relation("Sozalozniki")
+  sodelujoce_knjig  Knjiga[] @relation("SodelujoceZalozbe")
+
+  @@map("zalozba")
+}
+
+
+
+
+model Rubrika {
+  id             Int      @id @default(autoincrement())
+  naziv          String
+
+  knjige_katalog Knjiga[] @relation("RubrikaKatalog")
+  knjige_splet   Knjiga[] @relation("RubrikeNaSpletu")
+
+  @@map("rubrika")
+}
+
+
+model Nagrada {
+  id     Int      @id @default(autoincrement())
+  naziv  String
+
+  knjige Knjiga[] @relation("KnjigaNagrada")
+
+  @@map("nagrada")
+}
+
+
+model Zbirka {
+  id  Int    @id @default(autoincrement())
+  ime String
+
+  knjige Knjiga[] @relation("KnjigeVZbirki")
+
+  @@map("zbirka")
+}
+
+
+model Format {
+  id     Int      @id @default(autoincrement())
+  naziv  String   @unique
+
+  knjige Knjiga[]
+
+  @@map("format")
+}
+
+model Vezava {
+  id     Int      @id @default(autoincrement())
+  naziv  String   @unique
+
+  knjige Knjiga[]
+
+  @@map("vezava")
+}
+
+model DDV {
+  id      Int           @id @default(autoincrement())
+
+  stopnja Decimal @db.Decimal(5, 2) @unique
+  knjige  Knjiga[]
+
+  @@map("ddv")
 }

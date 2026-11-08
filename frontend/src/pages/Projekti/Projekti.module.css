@@ -1,3 +1,14 @@
-.title {
-  margin: 2rem;
-}
+.page { width: min(1100px, calc(100% - 3rem)); margin: 2.5rem auto; }
+.heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; }
+.heading h2 { margin: 0; font-size: 1.8rem; }
+.addButton, .card { color: inherit; text-decoration: none; }
+.addButton { border-radius: 0.6rem; padding: 0.75rem 1rem; background: #3157c8; color: white; font-weight: 650; }
+.addButton:hover { background: #2446ad; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
+.card { display: flex; min-height: 112px; flex-direction: column; align-items: flex-start; justify-content: center; gap: 0.5rem; padding: 1.25rem; border: 1px solid #e1e6f0; border-radius: 0.85rem; background: white; box-shadow: 0 3px 12px rgb(28 42 74 / 5%); transition: transform 120ms ease, box-shadow 120ms ease; }
+.card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgb(28 42 74 / 10%); }
+.cardTitle { font-size: 1.1rem; font-weight: 650; }
+.year { color: #596579; }
+.message { color: #596579; }
+.error { color: #b42318; }
+@media (max-width: 520px) { .page { width: calc(100% - 2rem); margin: 1.5rem auto; } .heading { align-items: flex-start; } }

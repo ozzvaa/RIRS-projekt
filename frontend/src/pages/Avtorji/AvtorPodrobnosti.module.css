@@ -1,0 +1,57 @@
+.page {
+  width: min(760px, calc(100% - 3rem));
+  margin: 2.5rem auto;
+}
+
+.backLink { color: #3157c8; text-decoration: none; }
+.backLink:hover { text-decoration: underline; }
+
+.panel {
+  margin-top: 1rem;
+  padding: 2rem;
+  border: 1px solid #e1e6f0;
+  border-radius: 0.9rem;
+  background: #fff;
+  box-shadow: 0 4px 16px rgb(28 42 74 / 6%);
+}
+
+.panel h2 { margin: 0 0 1.5rem; }
+
+.field {
+  display: grid;
+  gap: 0.45rem;
+  margin-bottom: 1.15rem;
+  color: #344054;
+  font-weight: 600;
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  border: 1px solid #cbd3e1;
+  border-radius: 0.5rem;
+  padding: 0.7rem 0.8rem;
+  background: white;
+  color: #172033;
+  font: inherit;
+  font-weight: 400;
+}
+
+.field textarea { resize: vertical; }
+.field input:focus, .field select:focus, .field textarea:focus { outline: 3px solid rgb(49 87 200 / 18%); border-color: #3157c8; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.5rem; }
+.saveButton, .deleteButton { border: 0; border-radius: 0.55rem; padding: 0.75rem 1rem; color: white; font: inherit; font-weight: 650; cursor: pointer; }
+.saveButton { background: #3157c8; }
+.saveButton:hover:not(:disabled) { background: #2446ad; }
+.deleteButton { background: #b42318; }
+.deleteButton:hover:not(:disabled) { background: #912018; }
+.actions button:disabled { cursor: wait; opacity: 0.65; }
+.message { width: min(760px, calc(100% - 3rem)); margin: 2.5rem auto; color: #596579; }
+.error { color: #b42318; }
+
+@media (max-width: 520px) {
+  .page { width: calc(100% - 2rem); margin: 1.5rem auto; }
+  .panel { padding: 1.25rem; }
+}

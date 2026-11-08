@@ -5,6 +5,7 @@ import Avtorji from './pages/Avtorji/Avtorji'
 import AvtorPodrobnosti from './pages/Avtorji/AvtorPodrobnosti'
 import Prijava from './pages/Prijava/Prijava'
 import Projekti from './pages/Projekti/Projekti'
+import ProjektPodrobnosti from './pages/Projekti/ProjektPodrobnosti'
 import Uredniki from './pages/Uredniki/Uredniki'
 import UrednikPodrobnosti from './pages/Uredniki/UrednikPodrobnosti'
 
@@ -27,6 +28,8 @@ function App() {
         <Route element={<PortalLayout />}>
           <Route path="/" element={<Navigate to="/projekti" replace />} />
           <Route path="/projekti" element={<Projekti />} />
+          <Route path="/projekti/nov" element={<ProjektPodrobnosti />} />
+          <Route path="/projekti/:id" element={<ProjektPodrobnosti />} />
           <Route path="/uredniki" element={<Uredniki />} />
           <Route path="/uredniki/nov" element={<UrednikPodrobnosti />} />
           <Route path="/uredniki/:id" element={<UrednikPodrobnosti />} />

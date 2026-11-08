@@ -52,6 +52,44 @@ export const projectDetailsSelect = {
   uredniki_na_projektu: { select: { id: true, ime: true, priimek: true, email: true } },
 } as const
 
+const completionSelect = {
+  ...projectDetailsSelect,
+  uredniki_na_projektu: { select: { id: true } },
+} as const
+
+const completionScalarFields = [
+  'naslov', 'podnaslov', 'navedba_izdaje', 'prevod_iz', 'izvirni_naslov',
+  'tisk_notranje_strani', 'tisk_ovitek', 'tisk_vezani_listi', 'kapitalni_trak_tip',
+  'oznacevalna_vrvica_tip', 'dodelava', 'cobiss_Id', 'subvencije',
+  'vsebina_za_katalog', 'daljsi_sestavek_o_knjigi', 'kratek_citat',
+  'sifra', 'leto_izdaje', 'stevilo_znakov_s_presledki', 'st_osnovnih_strani',
+  'st_dodatnih_strani', 'st_strani_skupaj', 'naklada', 'avtorske_pole', 'nadizvod',
+  'znesek_subvencije', 'cena_mpc', 'prva_izdaja', 'izvirno', 'kapitalni_trak',
+  'oznacevalna_vrvica', 'jak',
+] as const
+const completionRelationFields = [
+  'avtorji', 'prevajalci', 'lektorji', 'uredniki', 'korekturno_branje', 'prelom',
+  'oblikovanje', 'ilustratorji', 'uredniki_na_projektu',
+] as const
+
+export function calculateProjectCompletion(project: Record<string, unknown>) {
+  const total = completionScalarFields.length + completionRelationFields.length
+  const filled = [
+    ...completionScalarFields.map((field) => project[field]),
+    ...completionRelationFields.map((field) => project[field]),
+  ].filter((value) => {
+    if (value === null || value === undefined) return false
+    if (typeof value === 'string') return value.trim().length > 0
+    if (Array.isArray(value)) return value.length > 0
+    return true
+  }).length
+  return Math.round((filled / total) * 100)
+}
+
+function withCompletion<T extends Record<string, unknown>>(project: T) {
+  return { ...project, izpolnjenost: calculateProjectCompletion(project) }
+}
+
 export type ProjectData = {
   fields: Record<string, string | number | boolean | null>
   authors: Record<string, number[]>
@@ -96,23 +134,30 @@ export async function areEditorIdsValid(ids: number[]) {
 export async function getProjects(userId: number) {
   const access = await getProjectAccess(userId)
   if (!access) return []
-  return prisma.knjiga.findMany({
+  const projects = await prisma.knjiga.findMany({
     ...(access.canSeeAll ? {} : { where: { uredniki_na_projektu: { some: { id: userId } } } }),
-    select: projectListSelect,
+    select: completionSelect,
     orderBy: [{ naslov: 'asc' }, { id: 'asc' }],
   })
+  return projects.map((project) => ({
+    id: project.id,
+    naslov: project.naslov,
+    leto_izdaje: project.leto_izdaje,
+    izpolnjenost: calculateProjectCompletion(project),
+  }))
 }
 
 export async function getProjectById(userId: number, id: number) {
   const access = await getProjectAccess(userId)
   if (!access) return null
-  return prisma.knjiga.findFirst({
+  const project = await prisma.knjiga.findFirst({
     where: {
       id,
       ...(access.canSeeAll ? {} : { uredniki_na_projektu: { some: { id: userId } } }),
     },
-    select: projectDetailsSelect,
+    select: completionSelect,
   })
+  return project ? withCompletion(project) : null
 }
 
 export function createProject(data: ProjectData) {

@@ -1,0 +1,17 @@
+.badge {
+  display: inline-flex;
+  min-width: 3.4rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid hsl(var(--completion-hue) 60% 78%);
+  border-radius: 999px;
+  padding: 0.35rem 0.6rem;
+  background: hsl(var(--completion-hue) 75% 94%);
+  color: hsl(var(--completion-hue) 75% 30%);
+  font-size: 0.85rem;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+}
+
+.card { position: absolute; right: 0.8rem; bottom: 0.75rem; }
+.detail { flex: 0 0 auto; font-size: 1rem; }

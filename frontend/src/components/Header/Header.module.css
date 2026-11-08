@@ -51,9 +51,11 @@
 }
 
 .userButton {
+  display: inline-block;
   justify-self: end;
   color: #fff;
   background: #344054;
+  text-decoration: none;
 }
 
 .userButton:hover {

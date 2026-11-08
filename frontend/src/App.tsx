@@ -1,24 +1,36 @@
-
+import { Navigate, Outlet, Route, Routes } from 'react-router-dom'
 import Header from './components/Header/Header'
-import { Navigate, Route, Routes } from 'react-router-dom'
+import RequireAuth from './components/RequireAuth'
+import Avtorji from './pages/Avtorji/Avtorji'
+import Prijava from './pages/Prijava/Prijava'
 import Projekti from './pages/Projekti/Projekti'
 import Uredniki from './pages/Uredniki/Uredniki'
-import Avtorji from './pages/Avtorji/Avtorji'
 
-function App() {
+function PortalLayout() {
   return (
     <>
       <Header />
       <main>
-        <Routes>
+        <Outlet />
+      </main>
+    </>
+  )
+}
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/prijava" element={<Prijava />} />
+      <Route element={<RequireAuth />}>
+        <Route element={<PortalLayout />}>
           <Route path="/" element={<Navigate to="/projekti" replace />} />
           <Route path="/projekti" element={<Projekti />} />
           <Route path="/uredniki" element={<Uredniki />} />
           <Route path="/avtorji" element={<Avtorji />} />
           <Route path="*" element={<Navigate to="/projekti" replace />} />
-        </Routes>
-      </main>
-    </>
+        </Route>
+      </Route>
+    </Routes>
   )
 }
 

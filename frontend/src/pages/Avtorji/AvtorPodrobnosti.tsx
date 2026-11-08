@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { usePermissions } from '../../hooks/usePermissions'
 import styles from './AvtorPodrobnosti.module.css'
 
 type Author = {
@@ -27,6 +28,7 @@ function AvtorPodrobnosti() {
   const [loading, setLoading] = useState(!isNew)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const { canManage, loading: permissionsLoading } = usePermissions()
 
   useEffect(() => {
     if (isNew) {
@@ -94,6 +96,7 @@ function AvtorPodrobnosti() {
   }
 
   if (loading) return <p className={styles.message}>Nalaganje podatkov …</p>
+  if (isNew && (permissionsLoading || !canManage)) return <p className={styles.message}>{permissionsLoading ? 'Preverjanje pravic …' : 'Za dodajanje avtorjev nimaš ustreznih pravic.'}</p>
 
   return (
     <section className={styles.page}>

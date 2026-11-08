@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { usePermissions } from '../../hooks/usePermissions'
 import styles from './ProjektPodrobnosti.module.css'
 
 type Author = { id: number; ime: string | null; priimek: string | null }
@@ -51,6 +52,7 @@ function ProjektPodrobnosti() {
   const [loading, setLoading] = useState(!isNew)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const { canManage, loading: permissionsLoading } = usePermissions()
 
   useEffect(() => {
     let active = true
@@ -149,6 +151,7 @@ function ProjektPodrobnosti() {
   }
 
   if (loading) return <p className={styles.message}>Nalaganje podatkov …</p>
+  if (isNew && (permissionsLoading || !canManage)) return <p className={styles.message}>{permissionsLoading ? 'Preverjanje pravic …' : 'Za dodajanje projektov nimaš ustreznih pravic.'}</p>
 
   return (
     <section className={styles.page}>

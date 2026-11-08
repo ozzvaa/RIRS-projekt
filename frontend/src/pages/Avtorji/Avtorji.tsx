@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { usePermissions } from '../../hooks/usePermissions'
 import styles from './Avtorji.module.css'
 
 type Author = { id: number; ime: string | null; priimek: string | null }
@@ -8,6 +9,7 @@ function Avtorji() {
   const [authors, setAuthors] = useState<Author[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const { canManage } = usePermissions()
 
   useEffect(() => {
     let active = true
@@ -28,7 +30,7 @@ function Avtorji() {
     <section className={styles.page}>
       <div className={styles.heading}>
         <h2>Avtorji</h2>
-        <Link className={styles.addButton} to="/avtorji/nov">Dodaj avtorja</Link>
+        {canManage && <Link className={styles.addButton} to="/avtorji/nov">Dodaj avtorja</Link>}
       </div>
 
       {loading && <p className={styles.message}>Nalaganje avtorjev …</p>}

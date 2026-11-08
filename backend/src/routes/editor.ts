@@ -1,11 +1,14 @@
 import bcrypt from 'bcrypt'
 import { Router } from 'express'
 import { Prisma } from '../generated/prisma/client'
+import { requireAuth } from '../middleware/requireAuth'
+import { requireRoles } from '../middleware/requireRoles'
 import { createEditor, getEditorById, getEditors, updateEditor, type EditorData } from '../services/editorService'
 
 const editorRouter = Router()
 
-function parseId(value: string): number | null {
+function parseId(value: string | string[] | undefined): number | null {
+  if (typeof value !== 'string') return null
   const id = Number(value)
   return Number.isInteger(id) && id > 0 ? id : null
 }
@@ -46,7 +49,7 @@ editorRouter.get('/', async (_req, res) => {
   }
 })
 
-editorRouter.post('/', async (req, res) => {
+editorRouter.post('/', requireAuth, requireRoles('GLAVNI_UREDNIK', 'ADMIN'), async (req, res) => {
   const data = parseEditorData(req.body)
   const geslo = isRecord(req.body) ? req.body.geslo : undefined
   if (!data?.email || typeof geslo !== 'string' || geslo.length < 8 || Buffer.byteLength(geslo, 'utf8') > 72) {
@@ -79,7 +82,7 @@ editorRouter.get('/:id', async (req, res) => {
   }
 })
 
-editorRouter.patch('/:id', async (req, res) => {
+editorRouter.patch('/:id', requireAuth, requireRoles('GLAVNI_UREDNIK', 'ADMIN'), async (req, res) => {
   const id = parseId(req.params.id)
   if (id === null) {
     res.status(400).json({ error: 'ID mora biti pozitivno celo število.' })

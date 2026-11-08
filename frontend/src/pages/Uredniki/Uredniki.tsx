@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { usePermissions } from '../../hooks/usePermissions'
 import styles from './Uredniki.module.css'
 
 type Editor = { id: number; ime: string | null; priimek: string | null }
@@ -8,6 +9,7 @@ function Uredniki() {
   const [editors, setEditors] = useState<Editor[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const { canManage } = usePermissions()
 
   useEffect(() => {
     let active = true
@@ -28,7 +30,7 @@ function Uredniki() {
     <section className={styles.page}>
       <div className={styles.heading}>
         <h2>Uredniki</h2>
-        <Link className={styles.addButton} to="/uredniki/nov">Dodaj urednika</Link>
+        {canManage && <Link className={styles.addButton} to="/uredniki/nov">Dodaj urednika</Link>}
       </div>
       {loading && <p className={styles.message}>Nalaganje urednikov …</p>}
       {error && <p className={styles.error} role="alert">{error}</p>}

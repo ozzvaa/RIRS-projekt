@@ -1,5 +1,7 @@
 import { Router } from 'express'
 import { Prisma } from '../generated/prisma/client'
+import { requireAuth } from '../middleware/requireAuth'
+import { requireRoles } from '../middleware/requireRoles'
 import { createProject, deleteProject, getProjectById, getProjects, type ProjectData, updateProject } from '../services/projectService'
 
 const projectRouter = Router()
@@ -20,7 +22,8 @@ const authorFields = [
   'avtorji', 'prevajalci', 'lektorji', 'uredniki', 'korekturno_branje', 'prelom', 'oblikovanje', 'ilustratorji',
 ] as const
 
-function parseId(value: string): number | null {
+function parseId(value: string | string[] | undefined): number | null {
+  if (typeof value !== 'string') return null
   const id = Number(value)
   return Number.isInteger(id) && id > 0 ? id : null
 }
@@ -95,7 +98,7 @@ projectRouter.get('/', async (_req, res) => {
   catch (error) { handleError(error, res, 'pridobivanju') }
 })
 
-projectRouter.post('/', async (req, res) => {
+projectRouter.post('/', requireAuth, requireRoles('GLAVNI_UREDNIK', 'ADMIN'), async (req, res) => {
   const data = parseProjectData(req.body)
   if (!data) {
     res.status(400).json({ error: 'Podatki projekta niso veljavni.' })

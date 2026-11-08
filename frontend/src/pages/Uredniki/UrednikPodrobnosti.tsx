@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { usePermissions } from '../../hooks/usePermissions'
 import styles from './UrednikPodrobnosti.module.css'
 
 type Editor = { id: number; ime: string | null; priimek: string | null; email: string }
@@ -19,6 +20,7 @@ function UrednikPodrobnosti() {
   const [loading, setLoading] = useState(!isNew)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const { canManage, loading: permissionsLoading } = usePermissions()
 
   useEffect(() => {
     if (isNew) {
@@ -72,6 +74,7 @@ function UrednikPodrobnosti() {
   }
 
   if (loading) return <p className={styles.message}>Nalaganje podatkov …</p>
+  if (permissionsLoading || (isNew && !canManage)) return <p className={styles.message}>{permissionsLoading ? 'Preverjanje pravic …' : 'Za dodajanje urednikov nimaš ustreznih pravic.'}</p>
 
   return (
     <section className={styles.page}>
@@ -82,15 +85,15 @@ function UrednikPodrobnosti() {
         <form onSubmit={handleSubmit}>
           <label className={styles.field}>
             <span>Priimek</span>
-            <input autoComplete="family-name" value={form.priimek} onChange={(event) => setField('priimek', event.target.value)} />
+            <input autoComplete="family-name" disabled={!canManage} value={form.priimek} onChange={(event) => setField('priimek', event.target.value)} />
           </label>
           <label className={styles.field}>
             <span>Ime</span>
-            <input autoComplete="given-name" value={form.ime} onChange={(event) => setField('ime', event.target.value)} />
+            <input autoComplete="given-name" disabled={!canManage} value={form.ime} onChange={(event) => setField('ime', event.target.value)} />
           </label>
           <label className={styles.field}>
             <span>E-poštni naslov</span>
-            <input autoComplete="email" required type="email" value={form.email} onChange={(event) => setField('email', event.target.value)} />
+            <input autoComplete="email" disabled={!canManage} required type="email" value={form.email} onChange={(event) => setField('email', event.target.value)} />
           </label>
           {isNew && (
             <label className={styles.field}>
@@ -99,9 +102,9 @@ function UrednikPodrobnosti() {
               <small>Geslo mora vsebovati vsaj 8 znakov.</small>
             </label>
           )}
-          <div className={styles.actions}>
+          {canManage && <div className={styles.actions}>
             <button className={styles.saveButton} disabled={saving} type="submit">{saving ? 'Shranjevanje …' : isNew ? 'Dodaj urednika' : 'Shrani spremembe'}</button>
-          </div>
+          </div>}
         </form>
       </div>
     </section>

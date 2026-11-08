@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { usePermissions } from '../../hooks/usePermissions'
 import styles from './Projekti.module.css'
 
 type Project = { id: number; naslov: string | null; leto_izdaje: number | null }
@@ -8,6 +9,7 @@ function Projekti() {
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const { canManage } = usePermissions()
 
   useEffect(() => {
     let active = true
@@ -26,7 +28,7 @@ function Projekti() {
     <section className={styles.page}>
       <div className={styles.heading}>
         <h2>Projekti</h2>
-        <Link className={styles.addButton} to="/projekti/nov">Dodaj projekt</Link>
+        {canManage && <Link className={styles.addButton} to="/projekti/nov">Dodaj projekt</Link>}
       </div>
       {loading && <p className={styles.message}>Nalaganje projektov …</p>}
       {error && <p className={styles.error} role="alert">{error}</p>}

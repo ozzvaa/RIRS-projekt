@@ -1,5 +1,7 @@
 import { Router } from 'express'
 import { Prisma } from '../generated/prisma/client'
+import { requireAuth } from '../middleware/requireAuth'
+import { requireRoles } from '../middleware/requireRoles'
 import {
   createAuthor,
   deleteAuthor,
@@ -11,7 +13,8 @@ import {
 
 const authorRouter = Router()
 
-function parseId(value: string): number | null {
+function parseId(value: string | string[] | undefined): number | null {
+  if (typeof value !== 'string') return null
   const id = Number(value)
   return Number.isInteger(id) && id > 0 ? id : null
 }
@@ -57,7 +60,7 @@ authorRouter.get('/', async (_req, res) => {
   }
 })
 
-authorRouter.post('/', async (req, res) => {
+authorRouter.post('/', requireAuth, requireRoles('GLAVNI_UREDNIK', 'ADMIN'), async (req, res) => {
   const data = parseAuthorData(req.body)
   if (!data) {
     res.status(400).json({ error: 'Podatki avtorja niso veljavni.' })

@@ -1,11 +1,14 @@
 import { Router } from 'express'
+import { requireAuth } from '../middleware/requireAuth'
+import { requireRoles } from '../middleware/requireRoles'
 import { registerUser } from '../controllers/authController'
 import { deleteUser, getUserById, getUsers, updateUser } from '../services/userService'
 import type { UserData } from '../types/user'
 
 const userRouter = Router()
 
-function parseId(value: string): number | null {
+function parseId(value: string | string[] | undefined): number | null {
+  if (typeof value !== 'string') return null
   const id = Number(value)
   return Number.isInteger(id) && id > 0 ? id : null
 }
@@ -42,7 +45,7 @@ userRouter.get('/:id', async (req, res) => {
 // Reuse registration so passwords are always hashed before persistence.
 userRouter.post('/', registerUser)
 
-userRouter.patch('/:id', async (req, res) => {
+userRouter.patch('/:id', requireAuth, requireRoles('GLAVNI_UREDNIK', 'ADMIN'), async (req, res) => {
   const id = parseId(req.params.id)
   if (id === null) {
     res.status(400).json({ error: 'ID mora biti pozitivno celo število.' })
@@ -63,7 +66,7 @@ userRouter.patch('/:id', async (req, res) => {
   }
 })
 
-userRouter.delete('/:id', async (req, res) => {
+userRouter.delete('/:id', requireAuth, requireRoles('GLAVNI_UREDNIK', 'ADMIN'), async (req, res) => {
   const id = parseId(req.params.id)
   if (id === null) {
     res.status(400).json({ error: 'ID mora biti pozitivno celo število.' })

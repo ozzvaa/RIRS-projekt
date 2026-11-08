@@ -5,6 +5,7 @@ export const publicUserSelect = {
   email: true,
   ime: true,
   priimek: true,
+  vloge: true,
 } as const
 
 export type NewUser = {

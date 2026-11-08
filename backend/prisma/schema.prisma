@@ -12,10 +12,19 @@ datasource db {
   provider = "postgresql"
 }
 
+enum Vloga {
+  UPORABNIK
+  GLAVNI_UREDNIK
+  UREDNIK
+  TEHNIK
+  ADMIN
+}
+
 model Uporabnik {
   id        Int     @id @default(autoincrement())
   email     String  @unique
   ime       String?
   priimek   String?
   gesloHash String?
+  vloge     Vloga[] @default([UPORABNIK])
 }

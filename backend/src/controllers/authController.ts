@@ -101,6 +101,7 @@ export async function loginUser(req: Request, res: Response) {
       email: user.email,
       ime: user.ime,
       priimek: user.priimek,
+      vloge: user.vloge,
     }
     setAuthCookie(res, createAuthToken(user.id))
     res.json(publicUser)

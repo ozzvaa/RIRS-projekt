@@ -13,8 +13,9 @@ datasource db {
 }
 
 model Uporabnik {
-  id    Int    @id @default(autoincrement())
-  email String @unique
-  ime   String?
+  id        Int     @id @default(autoincrement())
+  email     String  @unique
+  ime       String?
   priimek   String?
+  gesloHash String?
 }

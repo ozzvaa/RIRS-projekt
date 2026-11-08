@@ -1,30 +1,36 @@
-
+import { Navigate, Outlet, Route, Routes } from 'react-router-dom'
 import Header from './components/Header/Header'
-import { Navigate, Route, Routes } from 'react-router-dom'
-import { useLocation } from 'react-router-dom'
-import Projekti from './pages/Projekti/Projekti'
-import Uredniki from './pages/Uredniki/Uredniki'
+import RequireAuth from './components/RequireAuth'
 import Avtorji from './pages/Avtorji/Avtorji'
 import Prijava from './pages/Prijava/Prijava'
+import Projekti from './pages/Projekti/Projekti'
+import Uredniki from './pages/Uredniki/Uredniki'
 
-function App() {
-  const { pathname } = useLocation()
-  const isLoginPage = pathname === '/prijava'
-
+function PortalLayout() {
   return (
     <>
-      {!isLoginPage && <Header />}
+      <Header />
       <main>
-        <Routes>
+        <Outlet />
+      </main>
+    </>
+  )
+}
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/prijava" element={<Prijava />} />
+      <Route element={<RequireAuth />}>
+        <Route element={<PortalLayout />}>
           <Route path="/" element={<Navigate to="/projekti" replace />} />
           <Route path="/projekti" element={<Projekti />} />
           <Route path="/uredniki" element={<Uredniki />} />
           <Route path="/avtorji" element={<Avtorji />} />
-          <Route path="/prijava" element={<Prijava />} />
           <Route path="*" element={<Navigate to="/projekti" replace />} />
-        </Routes>
-      </main>
-    </>
+        </Route>
+      </Route>
+    </Routes>
   )
 }
 

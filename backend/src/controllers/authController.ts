@@ -1,6 +1,12 @@
 import bcrypt from 'bcrypt'
 import type { Request, Response } from 'express'
-import { getUserByEmail, postUser, type NewUser } from '../services/userService'
+import { createAuthToken, clearAuthCookie, setAuthCookie } from '../auth/jwt'
+import {
+  getUserByEmail,
+  getUserById,
+  postUser,
+  type NewUser,
+} from '../services/userService'
 
 type AuthBody = {
   email?: unknown
@@ -48,15 +54,16 @@ export async function registerUser(req: Request, res: Response) {
     return
   }
 
-  const data: NewUser = {
-    email: body.email.trim().toLowerCase(),
-    gesloHash: await bcrypt.hash(body.geslo, 12),
-  }
-  if (body.ime !== undefined) data.ime = body.ime
-  if (body.priimek !== undefined) data.priimek = body.priimek
-
   try {
+    const data: NewUser = {
+      email: body.email.trim().toLowerCase(),
+      gesloHash: await bcrypt.hash(body.geslo, 12),
+    }
+    if (body.ime !== undefined) data.ime = body.ime
+    if (body.priimek !== undefined) data.priimek = body.priimek
+
     const user = await postUser(data)
+    setAuthCookie(res, createAuthToken(user.id))
     res.status(201).json(user)
   } catch (error) {
     if (isPrismaErrorCode(error, 'P2002')) {
@@ -95,9 +102,36 @@ export async function loginUser(req: Request, res: Response) {
       ime: user.ime,
       priimek: user.priimek,
     }
+    setAuthCookie(res, createAuthToken(user.id))
     res.json(publicUser)
   } catch (error) {
     console.error('Napaka pri prijavi uporabnika:', error)
     res.status(500).json({ error: 'Napaka pri prijavi uporabnika.' })
   }
+}
+
+export async function currentUser(req: Request, res: Response) {
+  const userId = req.authUserId
+  if (!userId) {
+    res.status(401).json({ error: 'Za nadaljevanje se prijavi.' })
+    return
+  }
+
+  try {
+    const user = await getUserById(userId)
+    if (!user) {
+      clearAuthCookie(res)
+      res.status(401).json({ error: 'Prijava ni več veljavna.' })
+      return
+    }
+    res.json(user)
+  } catch (error) {
+    console.error('Napaka pri preverjanju prijave:', error)
+    res.status(500).json({ error: 'Napaka pri preverjanju prijave.' })
+  }
+}
+
+export function logoutUser(_req: Request, res: Response) {
+  clearAuthCookie(res)
+  res.status(204).send()
 }

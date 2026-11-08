@@ -1,5 +1,5 @@
 import styles from './Header.module.css'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 
 const sections = [
   { label: 'Projekti', to: '/projekti' },
@@ -8,6 +8,20 @@ const sections = [
 ]
 
 function Header() {
+  const navigate = useNavigate()
+
+  async function handleLogout() {
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+      })
+    } catch {
+      // Continue to the login page even if the API is temporarily unavailable.
+    }
+    navigate('/prijava', { replace: true })
+  }
+
   return (
     <header className={styles.header}>
       <nav className={styles.navigation}>
@@ -26,9 +40,9 @@ function Header() {
 
       <h1 className={styles.title}>Uredniški portal</h1>
 
-      <NavLink className={styles.userButton!} to="/prijava">
-        Uporabnik
-      </NavLink>
+      <button className={styles.userButton!} onClick={handleLogout} type="button">
+        Odjava
+      </button>
     </header>
   )
 }

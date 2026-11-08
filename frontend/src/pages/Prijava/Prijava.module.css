@@ -58,6 +58,12 @@
   box-shadow: 0 0 0 4px rgb(89 105 232 / 14%);
 }
 
+.error {
+  margin: 0.25rem 0 0;
+  color: #b42318;
+  font-size: 0.9rem;
+}
+
 .submitButton {
   min-height: 3rem;
   margin-top: 1rem;
@@ -72,6 +78,11 @@
 
 .submitButton:hover {
   background: #3546c3;
+}
+
+.submitButton:disabled {
+  opacity: 0.7;
+  cursor: wait;
 }
 
 .submitButton:active {

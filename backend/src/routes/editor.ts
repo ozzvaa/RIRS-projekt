@@ -41,7 +41,7 @@ function reportError(error: unknown, res: Parameters<Parameters<typeof editorRou
   res.status(500).json({ error: `Napaka pri ${action} urednika.` })
 }
 
-editorRouter.get('/', async (_req, res) => {
+editorRouter.get('/', requireAuth, async (_req, res) => {
   try {
     res.json(await getEditors())
   } catch (error) {
@@ -64,7 +64,7 @@ editorRouter.post('/', requireAuth, requireRoles('GLAVNI_UREDNIK', 'ADMIN'), asy
   }
 })
 
-editorRouter.get('/:id', async (req, res) => {
+editorRouter.get('/:id', requireAuth, async (req, res) => {
   const id = parseId(req.params.id)
   if (id === null) {
     res.status(400).json({ error: 'ID mora biti pozitivno celo število.' })

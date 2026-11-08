@@ -2,7 +2,16 @@ import { Router } from 'express'
 import { Prisma } from '../generated/prisma/client'
 import { requireAuth } from '../middleware/requireAuth'
 import { requireRoles } from '../middleware/requireRoles'
-import { createProject, deleteProject, getProjectById, getProjects, type ProjectData, updateProject } from '../services/projectService'
+import {
+  areEditorIdsValid,
+  canManageProjectAssignments,
+  createProject,
+  deleteProject,
+  getProjectById,
+  getProjects,
+  type ProjectData,
+  updateProject,
+} from '../services/projectService'
 
 const projectRouter = Router()
 
@@ -66,7 +75,13 @@ function parseProjectData(body: unknown): ProjectData | null {
     if (!Array.isArray(ids) || ids.some((id) => !Number.isInteger(id) || typeof id !== 'number' || id <= 0)) return null
     authors[field] = ids as number[]
   }
-  return { fields, authors }
+  let editorIds: number[] | undefined
+  if (body.uredniki_na_projektu !== undefined) {
+    const ids = body.uredniki_na_projektu
+    if (!Array.isArray(ids) || ids.some((id) => !Number.isInteger(id) || typeof id !== 'number' || id <= 0)) return null
+    editorIds = ids as number[]
+  }
+  return { fields, authors, ...(editorIds === undefined ? {} : { editorIds }) }
 }
 
 function handleError(error: unknown, res: Parameters<Parameters<typeof projectRouter.get>[1]>[1], action: string) {
@@ -93,8 +108,8 @@ function handleError(error: unknown, res: Parameters<Parameters<typeof projectRo
   res.status(500).json({ error: `Napaka pri ${action} projekta.` })
 }
 
-projectRouter.get('/', async (_req, res) => {
-  try { res.json(await getProjects()) }
+projectRouter.get('/', requireAuth, async (req, res) => {
+  try { res.json(await getProjects(req.authUserId!)) }
   catch (error) { handleError(error, res, 'pridobivanju') }
 })
 
@@ -104,18 +119,22 @@ projectRouter.post('/', requireAuth, requireRoles('GLAVNI_UREDNIK', 'ADMIN'), as
     res.status(400).json({ error: 'Podatki projekta niso veljavni.' })
     return
   }
+  if (data.editorIds && !(await areEditorIdsValid(data.editorIds))) {
+    res.status(400).json({ error: 'Izbrani uporabniki morajo imeti vlogo UREDNIK.' })
+    return
+  }
   try { res.status(201).json(await createProject(data)) }
   catch (error) { handleError(error, res, 'dodajanju') }
 })
 
-projectRouter.get('/:id', async (req, res) => {
+projectRouter.get('/:id', requireAuth, async (req, res) => {
   const id = parseId(req.params.id)
   if (id === null) {
     res.status(400).json({ error: 'ID mora biti pozitivno celo število.' })
     return
   }
   try {
-    const project = await getProjectById(id)
+    const project = await getProjectById(req.authUserId!, id)
     if (!project) {
       res.status(404).json({ error: 'Projekt ni bil najden.' })
       return
@@ -124,7 +143,7 @@ projectRouter.get('/:id', async (req, res) => {
   } catch (error) { handleError(error, res, 'pridobivanju') }
 })
 
-projectRouter.patch('/:id', async (req, res) => {
+projectRouter.patch('/:id', requireAuth, async (req, res) => {
   const id = parseId(req.params.id)
   if (id === null) {
     res.status(400).json({ error: 'ID mora biti pozitivno celo število.' })
@@ -135,18 +154,39 @@ projectRouter.patch('/:id', async (req, res) => {
     res.status(400).json({ error: 'Podatki projekta niso veljavni.' })
     return
   }
-  try { res.json(await updateProject(id, data)) }
+  if (data.editorIds !== undefined) {
+    if (!(await canManageProjectAssignments(req.authUserId!))) {
+      res.status(403).json({ error: 'Samo glavni urednik ali administrator lahko dodeli urednike projektu.' })
+      return
+    }
+    if (!(await areEditorIdsValid(data.editorIds))) {
+      res.status(400).json({ error: 'Izbrani uporabniki morajo imeti vlogo UREDNIK.' })
+      return
+    }
+  }
+  try {
+    const project = await updateProject(id, req.authUserId!, data)
+    if (!project) {
+      res.status(404).json({ error: 'Projekt ni bil najden.' })
+      return
+    }
+    res.json(project)
+  }
   catch (error) { handleError(error, res, 'posodabljanju') }
 })
 
-projectRouter.delete('/:id', async (req, res) => {
+projectRouter.delete('/:id', requireAuth, async (req, res) => {
   const id = parseId(req.params.id)
   if (id === null) {
     res.status(400).json({ error: 'ID mora biti pozitivno celo število.' })
     return
   }
   try {
-    await deleteProject(id)
+    const project = await deleteProject(id, req.authUserId!)
+    if (!project) {
+      res.status(404).json({ error: 'Projekt ni bil najden.' })
+      return
+    }
     res.status(204).send()
   } catch (error) { handleError(error, res, 'brisanju') }
 })

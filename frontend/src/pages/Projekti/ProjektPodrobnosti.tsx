@@ -4,6 +4,7 @@ import { usePermissions } from '../../hooks/usePermissions'
 import styles from './ProjektPodrobnosti.module.css'
 
 type Author = { id: number; ime: string | null; priimek: string | null }
+type Editor = { id: number; ime: string | null; priimek: string | null; email: string }
 type Project = Record<string, unknown> & { id: number }
 
 const textFields = [
@@ -49,6 +50,8 @@ function ProjektPodrobnosti() {
   const [fields, setFields] = useState<Record<string, string>>(emptyScalars)
   const [authorIds, setAuthorIds] = useState<Record<string, string[]>>(emptyAuthors)
   const [authors, setAuthors] = useState<Author[]>([])
+  const [editors, setEditors] = useState<Editor[]>([])
+  const [editorIds, setEditorIds] = useState<string[]>([])
   const [loading, setLoading] = useState(!isNew)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -60,13 +63,20 @@ function ProjektPodrobnosti() {
       if (!response.ok) throw new Error('Seznama avtorjev ni bilo mogoče naložiti.')
       return response.json() as Promise<Author[]>
     }).then((data) => { if (active) setAuthors(data) })
+    const loadEditors = canManage
+      ? fetch('/api/uredniki', { credentials: 'include' }).then(async (response) => {
+          if (!response.ok) throw new Error('Seznama urednikov ni bilo mogoče naložiti.')
+          return response.json() as Promise<Editor[]>
+        }).then((data) => { if (active) setEditors(data) })
+      : Promise.resolve()
 
     if (isNew) {
       setFields({ ...emptyScalars })
       setAuthorIds({ ...emptyAuthors })
+      setEditorIds([])
       setError('')
       setLoading(false)
-      loadAuthors.catch((cause: unknown) => { if (active) setError(cause instanceof Error ? cause.message : 'Prišlo je do napake.') })
+      Promise.all([loadAuthors, loadEditors]).catch((cause: unknown) => { if (active) setError(cause instanceof Error ? cause.message : 'Prišlo je do napake.') })
       return () => { active = false }
     }
 
@@ -79,6 +89,7 @@ function ProjektPodrobnosti() {
         return response.json() as Promise<Project>
       }),
       loadAuthors.then(() => undefined),
+      loadEditors.then(() => undefined),
     ]).then(([project]) => {
       if (!active) return
       const nextFields = { ...emptyScalars }
@@ -92,12 +103,13 @@ function ProjektPodrobnosti() {
         nextAuthors[key] = (project[key] as Author[] | undefined)?.map((author) => String(author.id)) ?? []
       }
       setAuthorIds(nextAuthors)
+      setEditorIds((project.uredniki_na_projektu as Editor[] | undefined)?.map((editor) => String(editor.id)) ?? [])
     }).catch((cause: unknown) => {
       if (active) setError(cause instanceof Error ? cause.message : 'Prišlo je do napake.')
     }).finally(() => { if (active) setLoading(false) })
 
     return () => { active = false }
-  }, [id, isNew])
+  }, [id, isNew, canManage])
 
   function setField(key: string, value: string) {
     setFields((current) => ({ ...current, [key]: value }))
@@ -110,6 +122,12 @@ function ProjektPodrobnosti() {
     })
   }
 
+  function toggleEditor(editorId: string) {
+    setEditorIds((selected) => selected.includes(editorId)
+      ? selected.filter((idValue) => idValue !== editorId)
+      : [...selected, editorId])
+  }
+
   function payload() {
     const result: Record<string, unknown> = {}
     for (const [key] of textFields) result[key] = fields[key] || null
@@ -117,6 +135,7 @@ function ProjektPodrobnosti() {
     for (const [key] of decimalFields) result[key] = fields[key] === '' ? null : fields[key]
     for (const [key] of booleanFields) result[key] = fields[key] === '' ? null : fields[key] === 'true'
     for (const [key] of authorFields) result[key] = (authorIds[key] ?? []).map(Number)
+    if (canManage) result.uredniki_na_projektu = editorIds.map(Number)
     return result
   }
 
@@ -182,6 +201,22 @@ function ProjektPodrobnosti() {
               </details>
             ))}
           </div>
+
+          {canManage && <>
+            <h3>Uredniki na projektu</h3>
+            <div className={styles.authorGrid}>
+              <details className={styles.authorDropdown}>
+                <summary>Dodeljeni uredniki <span>{editorIds.length ? `(${editorIds.length})` : ''}</span></summary>
+                <div className={styles.authorOptions}>
+                  {editors.length === 0 && <span>Ni uporabnikov z vlogo UREDNIK.</span>}
+                  {editors.map((editor) => {
+                    const name = [editor.ime, editor.priimek].filter(Boolean).join(' ') || editor.email
+                    return <label key={editor.id}><input checked={editorIds.includes(String(editor.id))} onChange={() => toggleEditor(String(editor.id))} type="checkbox" />{name}</label>
+                  })}
+                </div>
+              </details>
+            </div>
+          </>}
 
           <h3>Ostali podatki</h3>
           <div className={styles.fieldGrid}>

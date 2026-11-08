@@ -49,11 +49,13 @@ export const projectDetailsSelect = {
   prelom: { select: { id: true, ime: true, priimek: true } },
   oblikovanje: { select: { id: true, ime: true, priimek: true } },
   ilustratorji: { select: { id: true, ime: true, priimek: true } },
+  uredniki_na_projektu: { select: { id: true, ime: true, priimek: true, email: true } },
 } as const
 
 export type ProjectData = {
   fields: Record<string, string | number | boolean | null>
   authors: Record<string, number[]>
+  editorIds?: number[]
 }
 
 function projectCreateData(data: ProjectData): Prisma.KnjigaCreateInput {
@@ -67,25 +69,62 @@ function projectCreateData(data: ProjectData): Prisma.KnjigaCreateInput {
     prelom: { connect: (data.authors.prelom ?? []).map((id) => ({ id })) },
     oblikovanje: { connect: (data.authors.oblikovanje ?? []).map((id) => ({ id })) },
     ilustratorji: { connect: (data.authors.ilustratorji ?? []).map((id) => ({ id })) },
+    uredniki_na_projektu: { connect: (data.editorIds ?? []).map((id) => ({ id })) },
   } as Prisma.KnjigaCreateInput
 }
 
-export function getProjects() {
+async function getProjectAccess(userId: number) {
+  const user = await prisma.uporabnik.findUnique({ where: { id: userId }, select: { vloge: true } })
+  if (!user) return null
+  const canSeeAll = user.vloge.includes('GLAVNI_UREDNIK') || user.vloge.includes('ADMIN')
+  return { canSeeAll }
+}
+
+export async function canManageProjectAssignments(userId: number) {
+  return (await getProjectAccess(userId))?.canSeeAll ?? false
+}
+
+export async function areEditorIdsValid(ids: number[]) {
+  if (ids.length === 0) return true
+  const editors = await prisma.uporabnik.findMany({
+    where: { id: { in: ids }, vloge: { has: 'UREDNIK' } },
+    select: { id: true },
+  })
+  return editors.length === new Set(ids).size
+}
+
+export async function getProjects(userId: number) {
+  const access = await getProjectAccess(userId)
+  if (!access) return []
   return prisma.knjiga.findMany({
+    ...(access.canSeeAll ? {} : { where: { uredniki_na_projektu: { some: { id: userId } } } }),
     select: projectListSelect,
     orderBy: [{ naslov: 'asc' }, { id: 'asc' }],
   })
 }
 
-export function getProjectById(id: number) {
-  return prisma.knjiga.findUnique({ where: { id }, select: projectDetailsSelect })
+export async function getProjectById(userId: number, id: number) {
+  const access = await getProjectAccess(userId)
+  if (!access) return null
+  return prisma.knjiga.findFirst({
+    where: {
+      id,
+      ...(access.canSeeAll ? {} : { uredniki_na_projektu: { some: { id: userId } } }),
+    },
+    select: projectDetailsSelect,
+  })
 }
 
 export function createProject(data: ProjectData) {
   return prisma.knjiga.create({ data: projectCreateData(data), select: projectDetailsSelect })
 }
 
-export function updateProject(id: number, data: ProjectData) {
+export async function updateProject(id: number, userId: number, data: ProjectData) {
+  const access = await getProjectAccess(userId)
+  if (!access || !(await getProjectById(userId, id))) return null
+  const editorAssignment = data.editorIds === undefined
+    ? {}
+    : { uredniki_na_projektu: { set: data.editorIds.map((editorId) => ({ id: editorId })) } }
   return prisma.knjiga.update({
     where: { id },
     data: {
@@ -98,11 +137,13 @@ export function updateProject(id: number, data: ProjectData) {
       prelom: { set: (data.authors.prelom ?? []).map((id) => ({ id })) },
       oblikovanje: { set: (data.authors.oblikovanje ?? []).map((id) => ({ id })) },
       ilustratorji: { set: (data.authors.ilustratorji ?? []).map((id) => ({ id })) },
+      ...editorAssignment,
     },
     select: projectDetailsSelect,
   })
 }
 
-export function deleteProject(id: number) {
+export async function deleteProject(id: number, userId: number) {
+  if (!(await getProjectById(userId, id))) return null
   return prisma.knjiga.delete({ where: { id } })
 }

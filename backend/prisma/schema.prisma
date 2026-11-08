@@ -22,6 +22,8 @@ model Uporabnik {
   priimek   String?
   gesloHash String?
   vloge     Vloga[] @default([UPORABNIK])
+
+  projekti_ki_jim_je_dodeljen Knjiga[] @relation("UrednikiNaProjektu")
 }
 
 
@@ -71,6 +73,7 @@ model Knjiga {
   prelom                     Avtor[]                @relation("Prelom")
   oblikovanje                Avtor[]                @relation("Oblikovanje")
   ilustratorji               Avtor[]                @relation("Ilustratorji")
+  uredniki_na_projektu       Uporabnik[]            @relation("UrednikiNaProjektu")
 
   spremna_besedila           SpremnoBesedilo[]
 

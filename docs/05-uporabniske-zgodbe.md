@@ -56,7 +56,7 @@ Acceptance criteria:
 
 
 
-## **US-05:** Kreiranje vlog (MVP)
+## **US-05:** Kreiranje vlog
 
 User Story:
 - Kot Administrator / Glavni urednik želim ustvarjati vloge, dodeljevati pravice vlogam in dodeljevati vloge ostalim uporabnikom.

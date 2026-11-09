@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import ProjectCompletion from '../../components/ProjectCompletion/ProjectCompletion'
 import { usePermissions } from '../../hooks/usePermissions'
 import styles from './ProjektPodrobnosti.module.css'
 
@@ -56,6 +57,13 @@ function ProjektPodrobnosti() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const { canManage, loading: permissionsLoading } = usePermissions()
+  const completedInputs = [
+    ...Object.values(fields),
+    ...Object.values(authorIds),
+    editorIds,
+  ].filter((value) => Array.isArray(value) ? value.length > 0 : value.trim().length > 0).length
+  const totalInputs = scalarKeys.length + authorFields.length + 1
+  const completion = Math.round((completedInputs / totalInputs) * 100)
 
   useEffect(() => {
     let active = true
@@ -176,7 +184,10 @@ function ProjektPodrobnosti() {
     <section className={styles.page}>
       <Link className={styles.backLink} to="/projekti">← Nazaj na projekte</Link>
       <div className={styles.panel}>
-        <h2>{isNew ? 'Nov projekt' : 'Podatki o projektu'}</h2>
+        <div className={styles.panelHeading}>
+          <h2>{isNew ? 'Nov projekt' : 'Podatki o projektu'}</h2>
+          <ProjectCompletion value={completion} position="detail" />
+        </div>
         {error && <p className={styles.error} role="alert">{error}</p>}
         <form onSubmit={handleSubmit}>
           <h3>Osnovni podatki</h3>

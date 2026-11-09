@@ -22,12 +22,18 @@ Portal omogoča prijavo uporabnikov z različnimi vlogami (ADMIN, GLAVNI_UREDNIK
 docker build -t uredniski_portal ./backend
 ```
 
-
 ```bash
 docker run -d --name uredniski_portal_db --env-file .env -p 7777:5432 -v uredniski_portal_data:/var/lib/postgresql uredniski_portal
 ```
 
-2. Zagon zalednega dela in čelnega dela aplikacije
+2. Zagon migracije
+```bash
+cd backend
+npx prisma generate
+```
+
+
+3. Zagon zalednega dela in čelnega dela aplikacije
 ```bash
 cd frontend
 npm run dev
